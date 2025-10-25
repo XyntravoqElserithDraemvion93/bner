@@ -15,76 +15,57 @@ if not BOT_TOKEN:
     print("エラー: DISCORD_TOKENが設定されていません")
     sys.exit(1)
 
-AUTO_ROLE_ID = 1429379213814796399  # 自動で付与するロールID
-
-import base64
-_0x2mzkjv = 1429379213814796399  
-
-
-
-
-_0xudd1hr = nextcord.Intents.default()
-_0xudd1hr._0x3qzow8 = True           
-_0xudd1hr._0x3ni5sf = True
-_0xudd1hr._0xs5z6pu = True          
-_0xudd1hr._0xap0spy = True   
-
-bot = commands.Bot(_0xn246fo="!", _0xudd1hr=_0xudd1hr)
-
-
-
-
-@bot.event
-async def on_ready():
-    print(fbase64.b64decode("4pyFIEJvdOODreOCsOOCpOODs+_0xbigszi==").decode('utf-8'))
-    await bot.change_presence(_0xk4qann=nextcord.Game(_0xenjn9r=base64.b64decode("L1ZleGVs44GuYm9044KS5L2/44GK77yB").decode('utf-8')))
-    print(base64.b64decode("8J+OriDjgrnjg4bjg7zjgr/jgrnjgpLjgIwvVmV4ZWzjga5ib3TjgpLkvb/_0x7ev01k=").decode('utf-8'))
-
-
-
-
-@bot.event
-async def on_member_join(member: nextcord.Member):
+_0x7mcbhg0y = lambda: None
+_0xoaxt9k40 = [i for i in range(0)]
+_0x5rwug9tk = (lambda: 0)()
+_0x4_fofh = 1429379213814796399  
+_0x5_6k7a = nextcord.Intents.default()
+_0x5_6k7a._0x6_niv3 = True           
+_0x5_6k7a._0x7_evik = True
+_0x5_6k7a._0x8_loiz = True          
+_0x5_6k7a._0x9_5no4 = True   
+_0xa_st9k = commands.Bot(_0xb_nn9n=__import__('base64').b64decode('IQ==').decode(), _0x5_6k7a=_0x5_6k7a)
+@_0xa_st9k.event
+async def _0x0_akhd():
+    print(f__import__('base64').b64decode('4pyFIEJvdOODreOCsOOCpOODs+WujOS6hjoge2JvdC51c2VyfQ==').decode())
+    await _0xa_st9k.change_presence(_0xc_e33k=nextcord.Game(_0xd_qr74=__import__('base64').b64decode('L1ZleGVs44GuYm9044KS5L2/44GK77yB').decode()))
+    print(__import__('base64').b64decode('8J+OriDjgrnjg4bjg7zjgr/jgrnjgpLjgIwvVmV4ZWzjga5ib3TjgpLkvb/jgYrvvIHjgI3jgavoqK3lrprjgZfjgb7jgZfjgZ8=').decode())
+@_0xa_st9k.event
+async def _0x1_7zvy(member: nextcord.Member):
     try:
-        _0xged0dn = (
+        _0xe_xym8 = (
             f"
-            "ようこそ/Vexelサーバーへ!\n"
-            "\n"
-            "**サーバーのルール**\n"
+            __import__('base64').b64decode('44KI44GG44GT44GdL1ZleGVs44K144O844OQ44O844G4IVxu').decode()
+            __import__('base64').b64decode('XG4=').decode()
+            __import__('base64').b64decode('KirjgrXjg7zjg5Djg7zjga7jg6vjg7zjg6sqKlxu').decode()
             "
             "
             "
-            "\n楽しんでいってね！"
+            __import__('base64').b64decode('XG7mpb3jgZfjgpPjgafjgYTjgaPjgabjga3vvIE=').decode()
         )
-        await member.send(_0xged0dn)
-        print(fbase64.b64decode("8J+TqSB7bWVtYmVyLm5hbWV9IOOBq+WPguWKoOaZguOBrkRN6YCB5L+h5a6M5LqG").decode('utf-8'))
+        await member.send(_0xe_xym8)
+        print(f__import__('base64').b64decode('8J+TqSB7bWVtYmVyLm5hbWV9IOOBq+WPguWKoOaZguOBrkRN6YCB5L+h5a6M5LqG').decode())
     except nextcord.Forbidden:
-        print(fbase64.b64decode("8J+aqyB7bWVtYmVyLm5hbWV9IOOBq0RN44KS6YCB44KM44G+44Gb44KT77yIRE3mi5LlkKboqK3lrprvvIk=").decode('utf-8'))
-
-    _0xkwsqco = member.guild.get_role(_0x2mzkjv)
-    if _0xkwsqco:
+        print(f__import__('base64').b64decode('8J+aqyB7bWVtYmVyLm5hbWV9IOOBq0RN44KS6YCB44KM44G+44Gb44KT77yIRE3mi5LlkKboqK3lrprvvIk=').decode())
+    _0xf_ic2d = member.guild.get_role(_0x4_fofh)
+    if _0xf_ic2d:
         try:
-            await member.add_roles(_0xkwsqco, _0xmg9rrt=base64.b64decode("6Ieq5YuV44Ot44O844Or5LuY5LiO").decode('utf-8'))
-            print(fbase64.b64decode("4pyFIHttZW1iZXIubmFtZX0g44Gr44Ot44O844OrIHtyb2xlLm5hbWV9IOOCkuS7mOS4jg==").decode('utf-8'))
+            await member.add_roles(_0xf_ic2d, _0x10_3ke8=__import__('base64').b64decode('6Ieq5YuV44Ot44O844Or5LuY5LiO').decode())
+            print(f__import__('base64').b64decode('4pyFIHttZW1iZXIubmFtZX0g44Gr44Ot44O844OrIHtyb2xlLm5hbWV9IOOCkuS7mOS4jg==').decode())
         except Exception as e:
-            print(fbase64.b64decode("4pqg77iPIHttZW1iZXIubmFtZX0g44G444Gu44Ot44O844Or5LuY5LiO44Gr5aSx5pWXOiB7ZX0=").decode('utf-8'))
-
-
-
-
-@bot.command()
-@commands.has_permissions(_0x6ldazz=True)
-async def clear(ctx, amount: int):
-    ""base64.b64decode("566h55CG6ICF5bCC55SoOiDjg6Hjg4Pjgrvjg7zjgrjjgpLliYrpmaQ=").decode('utf-8')""
+            print(f__import__('base64').b64decode('4pqg77iPIHttZW1iZXIubmFtZX0g44G444Gu44Ot44O844Or5LuY5LiO44Gr5aSx5pWXOiB7ZX0=').decode())
+@_0xa_st9k.command()
+@commands.has_permissions(_0x11_9j6p=True)
+async def _0x2_du7y(ctx, amount: int):
+    __import__('base64').b64decode('Ig==').decode()管理者専用: メッセージを削除__import__('base64').b64decode('Ig==').decode()
     if amount <= 0:
         return
     try:
-        await ctx.channel.purge(_0xnvcl5l=amount)
+        await ctx.channel.purge(_0x12_6npc=amount)
     except:
         pass
-
-@clear.error
-async def clear_error(ctx, error):
+@_0x2_du7y.error
+async def _0x3_eqs0(ctx, error):
     pass  
 
 # =========================================

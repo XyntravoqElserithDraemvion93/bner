@@ -6,40 +6,32 @@ import nextcord
 from nextcord.ext import commands
 from asyncio_throttle.throttler import Throttler
 
-# =========================================
-# 設定
-# =========================================
+
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 
 if not BOT_TOKEN:
-    print("エラー: DISCORD_TOKENが設定されていません")
+    print("エラー: トークン入ってないよぉ")
     sys.exit(1)
 
-AUTO_ROLE_ID = 1429379213814796399  # 自動で付与するロールID
+AUTO_ROLE_ID = 1429379213814796399  
 
-# =========================================
-# インテント設定
-# =========================================
+
 intents = nextcord.Intents.default()
-intents.members = True           # メンバー参加
+intents.members = True           
 intents.guilds = True
-intents.messages = True          # メッセージイベント
-intents.message_content = True   # メッセージ内容取得（コマンド用）
+intents.messages = True          
+intents.message_content = True   
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# =========================================
-# Bot起動時
-# =========================================
+
 @bot.event
 async def on_ready():
-    print(f" Botログイン完了: {bot.user}")
+    print(f" Botログイン完了したあ: {bot.user}")
     await bot.change_presence(activity=nextcord.Game(name="/Vexelのbotを使お！"))
-    print("🎮 ステータスを「/Vexelのbotを使お！」に設定しました")
+    
 
-# =========================================
-# 新規メンバーが参加した時
-# =========================================
+
 @bot.event
 async def on_member_join(member: nextcord.Member):
     try:
@@ -66,9 +58,7 @@ async def on_member_join(member: nextcord.Member):
         except Exception as e:
             print(f" {member.name} へのロール付与に失敗: {e}")
 
-# =========================================
-# 管理者用コマンド: !clear
-# =========================================
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def clear(ctx, amount: int):
@@ -82,11 +72,9 @@ async def clear(ctx, amount: int):
 
 @clear.error
 async def clear_error(ctx, error):
-    pass  # エラーは表示しない
+    pass  
 
-# =========================================
-# Bot起動（GitHub Actions対応構成）
-# =========================================
+
 if __name__ == "__main__":
     try:
         print("=== Discord Bot 起動中 ===")

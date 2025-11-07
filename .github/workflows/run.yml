@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
 
+    permissions:
+      actions: write       # ✅ 再実行を許可（403対策）
+      contents: read
+
     steps:
       - name: 🔹 リポジトリをチェックアウト
         uses: actions/checkout@v4
@@ -35,7 +39,7 @@ jobs:
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            pip install discord.py
+            pip install discord.py requests asyncio-throttle
           fi
 
       - name: 🚀 Discord Bot起動
@@ -48,7 +52,7 @@ jobs:
       - name: 🔁 自動再実行
         if: always()
         env:
-          GH_TOKEN: ${{ github.token }}  # ✅ これが追加！
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "🕒 再実行をスケジュール中..."
           gh workflow run "Run Discord Bot"

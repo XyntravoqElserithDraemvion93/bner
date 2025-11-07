@@ -5,7 +5,6 @@ import requests
 import nextcord
 from nextcord.ext import commands
 from asyncio_throttle.throttler import Throttler
-import re
 
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 

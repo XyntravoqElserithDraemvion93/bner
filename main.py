@@ -5,6 +5,7 @@ import asyncio
 import discord
 import requests
 import nextcord
+from nextcord import app_commands  
 from nextcord.ext import commands
 from asyncio_throttle.throttler import Throttler
 

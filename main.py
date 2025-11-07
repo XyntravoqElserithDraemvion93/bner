@@ -8,7 +8,7 @@ from asyncio_throttle.throttler import Throttler
 import re
 
 
-# トークンを環境変数から取得
+
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 if not BOT_TOKEN:
     print("エラー: トークン入ってないよぉ")
@@ -168,19 +168,17 @@ async def clear_error(ctx, error):
         await ctx.send("君には権限がぁない！", delete_after=3)
 
 
-# ===============================
-# 実行
-# ===============================
+
 if __name__ == "__main__":
     try:
         print("=== Discord Bot 起動中 ===")
         token = os.getenv("DISCORD_TOKEN")
         if not token:
-            print("❌ トークンが見つかりません")
+            print("トークンが見つかりません")
             sys.exit(1)
         bot.run(token)
     except Exception as e:
-        print(f"❌ エラー発生: {e}")
+        print(f"エラー発生: {e}")
     finally:
         print("🔄 Bot終了: GitHub Actionsが再起動を担当します")
         sys.stdout.flush()

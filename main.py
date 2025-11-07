@@ -1,9 +1,7 @@
 import os
 import sys
 import asyncio
-import re
 import requests
-
 import nextcord
 from nextcord.ext import commands
 from asyncio_throttle.throttler import Throttler

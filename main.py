@@ -17,12 +17,9 @@ if not BOT_TOKEN:
     sys.exit(1)
 
 AUTO_ROLE_ID = 1429379212489523340
-
-
-GUILD_ID = 1427160712475836508       
-CHANNEL_ID = 1434245647762067497     
-VERIFY_ROLE_ID = 1429379212489523340 
-
+GUILD_ID = 1427160712475836508
+CHANNEL_ID = 1434245647762067497
+VERIFY_ROLE_ID = 1429379212489523340
 
 intents = discord.Intents.default()
 intents.members = True
@@ -30,20 +27,22 @@ intents.guilds = True
 intents.messages = True
 intents.message_content = True
 
+
 class VexelBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
         await self.tree.sync()
-        print("スラッシュこまんどかんりょーう！")
+        print(" スラッシュこまんど準備かんりょー！")
+
 
 bot = VexelBot()
 
 
 @bot.event
 async def on_ready():
-    print(f"Botログインせいこー: {bot.user}")
+    print(f"Botログインせいこー！: {bot.user}")
     await bot.change_presence(
         activity=discord.Game(name="/Vexelのbotを使お！"),
         status=discord.Status.online
@@ -52,20 +51,18 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member: discord.Member):
-    
     role = member.guild.get_role(AUTO_ROLE_ID)
     if role:
         try:
             await member.add_roles(role, reason="自動ロール付与")
-            print(f" {member.name} にロール {role.name} を付与しました")
+            print(f"{member.name} にロール {role.name} を付与しました！！")
         except discord.Forbidden:
-            print(f" {member.name} へのロール付与失敗: 権限不足")
+            print(f"{member.name} へのロール付与失敗。。。: 権限不足。。ちゃんとしろ！")
         except discord.HTTPException as e:
-            print(f" {member.name} へのロール付与失敗: {e}")
+            print(f"{member.name} へのロール付与失敗。。。: {e}")
     else:
-        print(f" ロールID {AUTO_ROLE_ID} が見つかりません")
+        print(f"ロールID {AUTO_ROLE_ID} がみつからないよ。")
 
-    
     try:
         message = (
             f"### {member.name} さん、/Vexelにようこそ!\n"
@@ -86,47 +83,42 @@ async def on_member_join(member: discord.Member):
 
 @bot.event
 async def on_message(message: discord.Message):
-    
     if message.author.bot and not message.webhook_id:
         await bot.process_commands(message)
         return
-    
-    
+
     if message.channel.id == CHANNEL_ID:
         guild = bot.get_guild(GUILD_ID)
         if guild:
             role = guild.get_role(VERIFY_ROLE_ID)
             if role:
-                
                 clean_content = re.sub(r"[^a-zA-Z0-9_\-\sぁ-んァ-ン一-龥]", "", message.content).lower().strip()
-                
-                
+
                 target_member = None
                 for member in guild.members:
                     if member.name.lower() in clean_content or member.display_name.lower() in clean_content:
                         target_member = member
                         break
-                
+
                 if target_member:
-                    
                     try:
                         if role in target_member.roles:
                             await target_member.remove_roles(role)
                         await target_member.add_roles(role)
                     except:
-                        pass  
-    
-    
+                        pass
+
     await bot.process_commands(message)
+
 
 
 @bot.tree.command(name="verify", description="リンク紹介！")
 @app_commands.describe(
     title="リンクのタイトル",
-    description="リンク招待の文明をぉ決めろ",
-    button_label="ボタンの絵文字はなんだ？",
-    link="実行のリンクをよこせ！",
-    image_url="画像張りたいならどーぞ"
+    description="リンク招待の説明文を決めてね",
+    button_label="ボタンの絵文字またはテキスト",
+    link="ボタンが開くリンクURL",
+    image_url="（任意）画像URLを貼りたいとき"
 )
 async def verify(
     interaction: discord.Interaction,
@@ -136,9 +128,8 @@ async def verify(
     link: str,
     image_url: str = None
 ):
-    
     if not interaction.user.guild_permissions.administrator:
-        await interaction.response.send_message("君には権限がぁない！", ephemeral=True)
+        await interaction.response.send_message("君には権限がない！", ephemeral=True)
         return
 
     try:
@@ -147,7 +138,6 @@ async def verify(
             description=description,
             color=discord.Color.red()
         )
-
         if image_url:
             embed.set_image(url=image_url)
 
@@ -157,9 +147,9 @@ async def verify(
         await interaction.response.defer(ephemeral=True)
         await asyncio.sleep(0.3)
         await interaction.channel.send(embed=embed, view=view)
-        await interaction.followup.send("送信かんりょーう！", ephemeral=True)
+        await interaction.followup.send(" 送信せいこ！", ephemeral=True)
     except Exception as e:
-        await interaction.followup.send(f"エラーが出たよ。: {e}", ephemeral=True)
+        await interaction.followup.send(f" エラーでたよ。: {e}", ephemeral=True)
 
 
 @bot.command()
@@ -169,25 +159,25 @@ async def clear(ctx, amount: int):
     if amount <= 0:
         return
     deleted = await ctx.channel.purge(limit=amount)
-    await ctx.send(f"{len(deleted)} 件のメッセージを削除しました。！", delete_after=3)
+    await ctx.send(f"{len(deleted)} 件のメッセージを削除しました！", delete_after=3)
+
 
 @clear.error
 async def clear_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send("君には権限がぁない！", delete_after=3)
+        await ctx.send("君には権限がない！", delete_after=3)
 
 
 if __name__ == "__main__":
     try:
         print("=== Discord Bot 起動中！！ ===")
-        token = os.getenv("DISCORD_TOKEN")
-        if not token:
-            print(" トークンがないよ。。")
+        if not BOT_TOKEN:
+            print("トークンがないよ。。")
             sys.exit(1)
-        bot.run(token)
+        bot.run(BOT_TOKEN)
     except Exception as e:
-        print(f" エラー発生！！！: {e}")
+        print(f"エラー発生！！！: {e}")
     finally:
-        print(" Bot終了")
+        print("Bot終了")
         sys.stdout.flush()
         sys.exit(0)

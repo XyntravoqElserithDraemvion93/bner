@@ -47,7 +47,7 @@ jobs:
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            pip install discord.py asyncio
+            pip install nextcord asyncio-throttle requests
           fi
 
       # 4. Discord Bot起動

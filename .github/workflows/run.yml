@@ -52,6 +52,8 @@ jobs:
 
       # 4. Discord Bot起動
       - name: Discord Bot起動
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
         run: |
           echo "✅ Bot starting..."
           python main.py

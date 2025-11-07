@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import asyncio
+import discord
 import requests
 import nextcord
 from nextcord.ext import commands

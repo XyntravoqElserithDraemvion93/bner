@@ -1,41 +1,29 @@
 name: Run Discord Bot
 
-# ===========================
-# トリガー設定
-# ===========================
 on:
   schedule:
     - cron: "0 */4 * * *"  # 4時間ごとに自動実行（UTC）
   workflow_dispatch:        # 手動実行も可能
 
-# ===========================
-# 重複防止
-# ===========================
 concurrency:
   group: discord-bot
-  cancel-in-progress: true  # 古いジョブが残っていれば停止してから新しいジョブ開始
+  cancel-in-progress: true
 
-# ===========================
-# ジョブ定義
-# ===========================
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 350  #  
+    timeout-minutes: 350
 
     steps:
-      # 1. リポジトリをチェックアウト
       - name: 🔹 リポジトリをチェックアウト
         uses: actions/checkout@v4
 
-      # 2. Pythonセットアップ
-      - name:  Pythonセットアップ
+      - name: 🐍 Pythonセットアップ
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # 3. 依存ライブラリのキャッシュ＆インストール
-      - name:  依存ライブラリをキャッシュ＆インストール
+      - name: 📦 依存ライブラリをキャッシュ＆インストール
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
@@ -50,17 +38,17 @@ jobs:
             pip install discord.py
           fi
 
-      # 4. Discord Bot起動
-      - name:  Discord Bot起動
+      - name: 🚀 Discord Bot起動
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
         run: |
-          echo " Bot starting..."
+          echo "✅ Bot starting..."
           python main.py || echo "⚠️ Bot exited（再起動待ち）"
 
-      # 5. 自動再実行（GitHub Actions終了対策）
-      - name:  自動再実行
+      - name: 🔁 自動再実行
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}  # ✅ これが追加！
         run: |
           echo "🕒 再実行をスケジュール中..."
           gh workflow run "Run Discord Bot"

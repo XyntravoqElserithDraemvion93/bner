@@ -5,22 +5,35 @@ import requests
 import nextcord
 from nextcord.ext import commands
 from asyncio_throttle.throttler import Throttler
+from datetime import datetime, timedelta, timezone
+from collections import deque, defaultdict
 import re
 
 
-
+# トークンを環境変数から取得
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 if not BOT_TOKEN:
     print("エラー: トークン入ってないよぉ")
     sys.exit(1)
 
 
+# ===============================
+# 基本設定
+# ===============================
 AUTO_ROLE_ID = 1429379213814796399
-
-
 GUILD_ID = 1427160712475836508       
 CHANNEL_ID = 1434245647762067497     
 VERIFY_ROLE_ID = 1429379212489523340 
+
+# ===============================
+# スパム検出設定
+# ===============================
+SPAM_LIMIT = 4              
+TIME_WINDOW = 20            
+TIMEOUT_SPAM = timedelta(days=1)
+TIMEOUT_LINK = timedelta(hours=1)
+DELETE_DELAY = 5
+TARGET_CHANNEL_ID = 1434216894373560471  
 
 
 intents = nextcord.Intents.default()
@@ -38,7 +51,30 @@ class VexelBot(commands.Bot):
 
 bot = VexelBot()
 
+# スパム検出用
+msg_history = defaultdict(lambda: deque(maxlen=30))
+url_pattern = re.compile(r"(https?://[^\s]+)")
 
+
+# ===============================
+# ヘルパー関数
+# ===============================
+async def send_temp_message(channel, content):
+    try:
+        msg = await channel.send(content)
+        await asyncio.sleep(DELETE_DELAY)
+        await msg.delete()
+    except:
+        pass
+
+
+def is_admin_or_owner(member: nextcord.Member):
+    return member.guild_permissions.administrator or member == member.guild.owner
+
+
+# ===============================
+# イベントハンドラー
+# ===============================
 @bot.event
 async def on_ready():
     print(f"Botログインせいこー: {bot.user}")
@@ -50,7 +86,7 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member: nextcord.Member):
-    
+    # 自動ロール付与
     role = member.guild.get_role(AUTO_ROLE_ID)
     if role:
         try:
@@ -63,7 +99,7 @@ async def on_member_join(member: nextcord.Member):
     else:
         print(f" ロールID {AUTO_ROLE_ID} が見つかりません")
 
-    
+    # ウェルカムDM送信
     try:
         message = (
             f"### {member.name} さん、/Vexelにようこそ!\n"
@@ -84,21 +120,90 @@ async def on_member_join(member: nextcord.Member):
 
 @bot.event
 async def on_message(message: nextcord.Message):
-    
+    # Bot自身のメッセージは無視
     if message.author.bot and not message.webhook_id:
         await bot.process_commands(message)
         return
     
+    # ギルドメッセージのみ処理
+    if not message.guild:
+        return
     
+    # ===============================
+    # スパム検出（TARGET_CHANNEL_IDのみ）
+    # ===============================
+    if message.channel.id == TARGET_CHANNEL_ID:
+        user = message.author
+
+        # 管理者とオーナーはスキップ
+        if not is_admin_or_owner(user):
+            now = datetime.now().timestamp()
+            dq = msg_history[user.id]
+            dq.append((now, message))
+
+            # 古いメッセージを削除
+            while dq and now - dq[0][0] > TIME_WINDOW:
+                dq.popleft()
+
+            # スパム検出
+            if len(dq) >= SPAM_LIMIT:
+                until = datetime.now(timezone.utc) + TIMEOUT_SPAM
+                try:
+                    await user.edit(timeout=until)
+
+                    # メッセージ削除
+                    messages_to_delete = list(dq)[-10:]
+                    for _, msg in reversed(messages_to_delete):
+                        try:
+                            await msg.delete()
+                        except:
+                            pass
+                    dq.clear()
+
+                    await send_temp_message(
+                        message.channel,
+                        f"{user.mention} がスパムしたと思うからタイムアウトする！"
+                    )
+                    return
+                except Exception as e:
+                    print("スパムタイムアウト失敗したよー！！！！！！！！:", e)
+
+            # リンクスパム検出
+            links = url_pattern.findall(message.content)
+            if len(links) >= 3:
+                until = datetime.now(timezone.utc) + TIMEOUT_LINK
+                try:
+                    await message.delete()
+                    await user.edit(timeout=until)
+
+                    # メッセージ削除
+                    messages_to_delete = list(dq)[-10:]
+                    for _, msg in reversed(messages_to_delete):
+                        try:
+                            await msg.delete()
+                        except:
+                            pass
+
+                    await send_temp_message(
+                        message.channel,
+                        f" {user.mention} がリンクをいっぱい書いたからタイムアウトー！"
+                    )
+                    dq.clear()
+                    return
+                except Exception as e:
+                    print("タイムアウト失敗。。。:", e)
+    
+    # ===============================
+    # 認証チャンネル処理（CHANNEL_ID）
+    # ===============================
     if message.channel.id == CHANNEL_ID:
         guild = bot.get_guild(GUILD_ID)
         if guild:
             role = guild.get_role(VERIFY_ROLE_ID)
             if role:
-                
                 clean_content = re.sub(r"[^a-zA-Z0-9_\-\sぁ-んァ-ン一-龥]", "", message.content).lower().strip()
                 
-                
+                # メンバー検索
                 target_member = None
                 for member in guild.members:
                     if member.name.lower() in clean_content or member.display_name.lower() in clean_content:
@@ -106,18 +211,20 @@ async def on_message(message: nextcord.Message):
                         break
                 
                 if target_member:
-                    
                     try:
                         if role in target_member.roles:
                             await target_member.remove_roles(role)
                         await target_member.add_roles(role)
                     except:
-                        pass  
+                        pass
     
-    
+    # コマンド処理
     await bot.process_commands(message)
 
 
+# ===============================
+# スラッシュコマンド
+# ===============================
 @bot.slash_command(name="verify", description="リンク紹介！")
 async def verify(
     interaction: nextcord.Interaction,
@@ -127,7 +234,6 @@ async def verify(
     link: str = nextcord.SlashOption(description="実行のリンクをよこせ！"),
     image_url: str = nextcord.SlashOption(description="画像張りたいならどーぞ", required=False)
 ):
-    
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("君には権限がぁない！", ephemeral=True)
         return
@@ -153,6 +259,9 @@ async def verify(
         await interaction.followup.send(f"エラーが出たよ。: {e}", ephemeral=True)
 
 
+# ===============================
+# プレフィックスコマンド
+# ===============================
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def clear(ctx, amount: int):
@@ -168,17 +277,19 @@ async def clear_error(ctx, error):
         await ctx.send("君には権限がぁない！", delete_after=3)
 
 
-
+# ===============================
+# 実行
+# ===============================
 if __name__ == "__main__":
     try:
         print("=== Discord Bot 起動中 ===")
         token = os.getenv("DISCORD_TOKEN")
         if not token:
-            print("トークンが見つかりません")
+            print("❌ トークンが見つかりません")
             sys.exit(1)
         bot.run(token)
     except Exception as e:
-        print(f"エラー発生: {e}")
+        print(f"❌ エラー発生: {e}")
     finally:
         print("🔄 Bot終了: GitHub Actionsが再起動を担当します")
         sys.stdout.flush()

@@ -10,24 +10,17 @@ from collections import deque, defaultdict
 import re
 
 
-# トークンを環境変数から取得
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
 if not BOT_TOKEN:
     print("エラー: トークン入ってないよぉ")
     sys.exit(1)
 
 
-# ===============================
-# 基本設定
-# ===============================
 AUTO_ROLE_ID = 1429379213814796399
 GUILD_ID = 1427160712475836508       
 CHANNEL_ID = 1434245647762067497     
 VERIFY_ROLE_ID = 1429379212489523340 
 
-# ===============================
-# スパム検出設定
-# ===============================
 SPAM_LIMIT = 4
 TIME_WINDOW = 20
 TIMEOUT_SPAM = timedelta(days=1)
@@ -48,16 +41,13 @@ msg_history = defaultdict(lambda: deque(maxlen=30))
 url_pattern = re.compile(r"(https?://[^\s]+)")
 
 
-# ===============================
-# ヘルパー関数
-# ===============================
 async def send_temp_message(channel, content):
     try:
         msg = await channel.send(content)
         await asyncio.sleep(DELETE_DELAY)
         await msg.delete()
     except Exception as e:
-        print(f"一時メッセージ送信エラー: {e}")
+        print(f"一時メッセージ送信エラー！！！！！。: {e}")
 
 
 def is_admin_or_owner(member: nextcord.Member):
@@ -66,9 +56,7 @@ def is_admin_or_owner(member: nextcord.Member):
     return member.guild_permissions.administrator or member == member.guild.owner
 
 
-# ===============================
-# イベントハンドラー
-# ===============================
+
 @bot.event
 async def on_ready():
     print(f"Botログインせいこー: {bot.user}")
@@ -104,28 +92,26 @@ async def on_member_join(member: nextcord.Member):
             "楽しんでいってね！"
         )
         await member.send(message)
-        print(f"{member.name} にDM送信完了")
+        print(f"{member.name} にDM送信完了！")
     except nextcord.Forbidden:
-        print(f"{member.name} にDMを送れません（DM拒否設定）")
+        print(f"{member.name} にDMを送れません（DM拒否設定）なんで拒否するの。")
     except nextcord.HTTPException as e:
-        print(f"{member.name} へのDM送信失敗: {e}")
+        print(f"{member.name} へのDM送信失敗。。: {e}")
 
 
 @bot.event
 async def on_message(message: nextcord.Message):
-    # Bot自身のメッセージをスキップ（ウェブフックは除く）
+
     if message.author.bot and not message.webhook_id:
         return
     
-    # DMは処理しない
+
     if not message.guild:
         return
     
     user = message.author
     
-    # ===============================
-    # スパム対策（TARGET_CHANNEL_ID）
-    # ===============================
+
     if message.channel.id == TARGET_CHANNEL_ID:
         print(f"[スパム検出チャンネル] {user.name}: {message.content[:50]}")
         
@@ -139,20 +125,20 @@ async def on_message(message: nextcord.Message):
         dq = msg_history[user.id]
         dq.append((now, message))
         
-        # 古いメッセージを削除
+
         while dq and now - dq[0][0] > TIME_WINDOW:
             dq.popleft()
         
         print(f"  → 過去{TIME_WINDOW}秒のメッセージ数: {len(dq)}")
         
-        # スパム検出
+
         if len(dq) >= SPAM_LIMIT:
             until = datetime.now(timezone.utc) + TIMEOUT_SPAM
             try:
                 await user.timeout(until, reason="スパム検出")
                 print(f"  → タイムアウト実行: {user.name}")
                 
-                # 最近のメッセージを削除
+
                 messages_to_delete = list(dq)[-10:]
                 for _, msg in reversed(messages_to_delete):
                     try:
@@ -172,7 +158,7 @@ async def on_message(message: nextcord.Message):
             except Exception as e:
                 print(f"  → タイムアウト失敗: {e}")
         
-        # リンクスパム検出
+
         links = url_pattern.findall(message.content)
         if len(links) >= 3:
             print(f"  → リンク数: {len(links)} - リンクスパム検出")
@@ -197,13 +183,11 @@ async def on_message(message: nextcord.Message):
                 dq.clear()
                 return
             except nextcord.Forbidden:
-                print(f"  → リンクスパムタイムアウト失敗: 権限不足")
+                print(f"  → リンクスパムタイムアウト失敗: 権限不足。。")
             except Exception as e:
                 print(f"  → リンクスパムタイムアウト失敗: {e}")
     
-    # ===============================
-    # 認証チャンネル処理（CHANNEL_ID）
-    # ===============================
+
     if message.channel.id == CHANNEL_ID:
         print(f"[認証チャンネル] メッセージ検出: {message.content[:50]}")
         print(f"  → Webhook: {bool(message.webhook_id)}, Author: {message.author.name}")
@@ -237,9 +221,7 @@ async def on_message(message: nextcord.Message):
     await bot.process_commands(message)
 
 
-# ===============================
-# スラッシュコマンド
-# ===============================
+
 @bot.slash_command(name="verify", description="リンク紹介！")
 async def verify(
     interaction: nextcord.Interaction,
@@ -274,9 +256,7 @@ async def verify(
         await interaction.followup.send(f"エラーが出たよ。: {e}", ephemeral=True)
 
 
-# ===============================
-# プレフィックスコマンド
-# ===============================
+
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def clear(ctx, amount: int):
@@ -292,19 +272,17 @@ async def clear_error(ctx, error):
         await ctx.send("君には権限がぁない！", delete_after=3)
 
 
-# ===============================
-# 実行
-# ===============================
+
 if __name__ == "__main__":
     try:
         print("=== Discord Bot 起動中 ===")
         token = os.getenv("DISCORD_TOKEN")
         if not token:
-            print("❌ トークンが見つかりません")
+            print("トークンがなーい！")
             sys.exit(1)
         bot.run(token)
     except Exception as e:
-        print(f"❌ エラー発生: {e}")
+        print(f"エラー発生: {e}")
     finally:
         print("🔄 Bot終了: GitHub Actionsが再起動を担当します")
         sys.stdout.flush()

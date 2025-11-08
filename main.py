@@ -20,7 +20,7 @@ if not BOT_TOKEN:
 # ===============================
 # 基本設定
 # ===============================
-AUTO_ROLE_ID = 1429379213814796399
+AUTO_ROLE_ID = 1429379212489523340
 GUILD_ID = 1427160712475836508       
 CHANNEL_ID = 1434245647762067497     
 VERIFY_ROLE_ID = 1429379212489523340 
@@ -113,6 +113,10 @@ async def on_member_join(member: nextcord.Member):
 
 @bot.event
 async def on_message(message: nextcord.Message):
+    # Bot自身のメッセージをスキップ（ウェブフックは除く）
+    if message.author.bot and not message.webhook_id:
+        return
+    
     # DMは処理しない
     if not message.guild:
         return
@@ -123,11 +127,6 @@ async def on_message(message: nextcord.Message):
     # スパム対策（TARGET_CHANNEL_ID）
     # ===============================
     if message.channel.id == TARGET_CHANNEL_ID:
-        # Bot/Webhookのメッセージはスパム対策しない
-        if message.author.bot or message.webhook_id:
-            await bot.process_commands(message)
-            return
-            
         print(f"[スパム検出チャンネル] {user.name}: {message.content[:50]}")
         
         # 管理者チェック
@@ -206,168 +205,34 @@ async def on_message(message: nextcord.Message):
     # 認証チャンネル処理（CHANNEL_ID）
     # ===============================
     if message.channel.id == CHANNEL_ID:
-        print(f"[認証チャンネル] メッセージ検出: {message.content[:100]}")
+        print(f"[認証チャンネル] メッセージ検出: {message.content[:50]}")
+        print(f"  → Webhook: {bool(message.webhook_id)}, Author: {message.author.name}")
         
         guild = bot.get_guild(GUILD_ID)
-        if not guild:
-            print("  → ギルドが見つかりません")
-            await bot.process_commands(message)
-            return
-        
-        role = guild.get_role(VERIFY_ROLE_ID)
-        if not role:
-            print(f"  → ロールID {VERIFY_ROLE_ID} が見つかりません")
-            await bot.process_commands(message)
-            return
-        
-
-        
-        target_member = None
-        content = message.content
-        
-        # パターンマッチング
-        # "- ユーザー名#0" or "- ユーザー名" の形式を検出
-        dash_match = re.search(r'-\s*(.+?)(?:#\d+)?
-    
-    await bot.process_commands(message)
-
-
-# ===============================
-# スラッシュコマンド
-# ===============================
-@bot.slash_command(name="verify", description="リンク紹介！")
-async def verify(
-    interaction: nextcord.Interaction,
-    title: str = nextcord.SlashOption(description="リンクのタイトル"),
-    description: str = nextcord.SlashOption(description="リンク招待の文明をぉ決めろ"),
-    button_label: str = nextcord.SlashOption(description="ボタンの絵文字はなんだ？"),
-    link: str = nextcord.SlashOption(description="実行のリンクをよこせ！"),
-    image_url: str = nextcord.SlashOption(description="画像張りたいならどーぞ", required=False)
-):
-    if not interaction.user.guild_permissions.administrator:
-        await interaction.response.send_message("君には権限がぁない！", ephemeral=True)
-        return
-
-    try:
-        embed = nextcord.Embed(
-            title=title,
-            description=description,
-            color=nextcord.Color.red()
-        )
-
-        if image_url:
-            embed.set_image(url=image_url)
-
-        view = nextcord.ui.View()
-        view.add_item(nextcord.ui.Button(label=button_label, url=link))
-
-        await interaction.response.defer(ephemeral=True)
-        await asyncio.sleep(0.3)
-        await interaction.channel.send(embed=embed, view=view)
-        await interaction.followup.send("送信かんりょーう！", ephemeral=True)
-    except Exception as e:
-        await interaction.followup.send(f"エラーが出たよ。: {e}", ephemeral=True)
-
-
-# ===============================
-# プレフィックスコマンド
-# ===============================
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def clear(ctx, amount: int):
-    """いらないメッセージ削除削除！！！"""
-    if amount <= 0:
-        return
-    deleted = await ctx.channel.purge(limit=amount)
-    await ctx.send(f"{len(deleted)} 件のメッセージを削除しました。！", delete_after=3)
-
-@clear.error
-async def clear_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("君には権限がぁない！", delete_after=3)
-
-
-# ===============================
-# 実行
-# ===============================
-if __name__ == "__main__":
-    try:
-        print("=== Discord Bot 起動中 ===")
-        token = os.getenv("DISCORD_TOKEN")
-        if not token:
-            print("❌ トークンが見つかりません")
-            sys.exit(1)
-        bot.run(token)
-    except Exception as e:
-        print(f"❌ エラー発生: {e}")
-    finally:
-        print("🔄 Bot終了: GitHub Actionsが再起動を担当します")
-        sys.stdout.flush()
-        sys.exit(0)
-, content)
-        if dash_match:
-            username = dash_match.group(1).strip()
-            print(f"  → 「-」の後からユーザー名検出: '{username}'")
-            
-            # ギルド内のメンバーと照合
-            for member in guild.members:
-                member_name_lower = member.name.lower()
-                member_display_lower = member.display_name.lower()
-                username_lower = username.lower()
+        if guild:
+            role = guild.get_role(VERIFY_ROLE_ID)
+            if role:
+                clean_content = re.sub(r"[^a-zA-Z0-9_\-\sぁ-んァ-ン一-龥]", "", message.content).lower().strip()
+                print(f"  → クリーン後: {clean_content}")
                 
-                # 完全一致または部分一致
-                if (username_lower == member_name_lower or 
-                    username_lower == member_display_lower or
-                    username_lower in member_name_lower or
-                    username_lower in member_display_lower or
-                    member_name_lower in username_lower or
-                    member_display_lower in username_lower):
-                    target_member = member
-                    print(f"  → メンバー発見: {member.name} (表示名: {member.display_name})")
-                    break
-        
-        # パターン1で見つからなかった場合、メッセージ全体から検索
-        if not target_member:
-            print("  → パターンマッチ失敗、全文検索開始")
-            # 特殊文字を除去してクリーンなテキストに
-            clean_content = re.sub(r"[^\w\sぁ-んァ-ヶー一-龠々]", " ", content).lower().strip()
-            print(f"  → クリーン化テキスト: '{clean_content}'")
-            
-            # 全メンバーと照合
-            for member in guild.members:
-                member_name_lower = member.name.lower()
-                member_display_lower = member.display_name.lower()
+                target_member = None
+                for member in guild.members:
+                    if member.name.lower() in clean_content or member.display_name.lower() in clean_content:
+                        target_member = member
+                        print(f"  → マッチ発見: {member.name}")
+                        break
                 
-                # メンバー名がメッセージ内に含まれているか
-                if (member_name_lower in clean_content or 
-                    member_display_lower in clean_content):
-                    target_member = member
-                    print(f"  → メンバー発見（全文検索）: {member.name} (表示名: {member.display_name})")
-                    break
-        
-        # メンバーが見つかった場合、ロールを付与
-        if target_member:
-            try:
-                if role not in target_member.roles:
-                    await target_member.add_roles(role, reason="認証完了")
-                    print(f"  ✅ ロール付与成功: {target_member.name}")
-                    
-                    # 成功メッセージを送信（オプション）
+                if target_member:
                     try:
-                        await message.channel.send(
-                            f"✅ {target_member.mention} に認証ロールを付与しました！",
-                            delete_after=5
-                        )
-                    except:
-                        pass
+                        if role in target_member.roles:
+                            await target_member.remove_roles(role)
+                            print(f"  → ロール削除: {target_member.name}")
+                        await target_member.add_roles(role)
+                        print(f"  → ロール付与成功: {target_member.name}")
+                    except Exception as e:
+                        print(f"  → ロール付与エラー: {e}")
                 else:
-                    print(f"  → {target_member.name} は既にロールを持っています")
-            except nextcord.Forbidden:
-                print(f"  ❌ ロール付与失敗: 権限不足")
-            except Exception as e:
-                print(f"  ❌ ロール付与エラー: {e}")
-        else:
-            print(f"  ❌ メッセージからユーザーを特定できませんでした: '{content}'")
+                    print(f"  → メンバーが見つかりませんでした")
     
     await bot.process_commands(message)
 
